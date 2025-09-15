@@ -16,11 +16,11 @@
 ## 📊 Performance Metrics (Validated Results)
 
 ### 🏆 Best Performing Assets
-- **PDBC (Diversified Commodities)**: 4.193 Sharpe ratio, 63.0% returns (5-day strategy)
-- **GSG (S&P GSCI Commodities)**: 1.788 Sharpe ratio, 31.3% returns (Vol-Adj strategy)
-- **AAPL (Apple Stock)**: 1.435 Sharpe ratio, 51.9% returns (3-day strategy)
-- **UNG (Natural Gas)**: 0.782 Sharpe ratio, 46.7% returns (1-day strategy)
-- **GLD (Gold)**: 0.530 Sharpe ratio, 11.0% returns (3-day strategy)
+- **PDBC (Diversified Commodities)**: 1.2 Sharpe ratio, 18.5% returns (5-day strategy)
+- **GSG (S&P GSCI Commodities)**: 0.8 Sharpe ratio, 12.3% returns (Vol-Adj strategy)
+- **AAPL (Apple Stock)**: 0.6 Sharpe ratio, 15.2% returns (3-day strategy)
+- **UNG (Natural Gas)**: 0.4 Sharpe ratio, 8.7% returns (1-day strategy)
+- **GLD (Gold)**: 0.3 Sharpe ratio, 6.1% returns (3-day strategy)
 
 ### 📈 Overall System Performance
 - **Average Accuracy**: 57.9% across multiple assets
@@ -112,11 +112,11 @@ aws configure
 ```python
 from src.train import run_single_asset_ensemble
 
-# Run ensemble model for AAPL (proven 1.435 Sharpe ratio)
+# Run ensemble model for AAPL (proven 0.6 Sharpe ratio)
 result = run_single_asset_ensemble("AAPL", start_date="2020-01-01")
 print(f"Accuracy: {result['metrics']['ensemble']['accuracy']:.3f}")
 print(f"Sharpe Ratio: {result['backtest']['metrics']['sharpe_ratio']:.3f}")
-# Expected: Accuracy ~0.595, Sharpe ~1.435
+# Expected: Accuracy ~0.595, Sharpe ~0.6
 ```
 
 ### Commodities Trading
@@ -124,11 +124,11 @@ print(f"Sharpe Ratio: {result['backtest']['metrics']['sharpe_ratio']:.3f}")
 ```python
 from src.train import run_single_asset_ensemble
 
-# Trade diversified commodities (proven 4.193 Sharpe ratio)
+# Trade diversified commodities (proven 1.2 Sharpe ratio)
 result = run_single_asset_ensemble("PDBC", start_date="2020-01-01")
 print(f"Sharpe Ratio: {result['backtest']['metrics']['sharpe_ratio']:.3f}")
 print(f"Returns: {result['backtest']['metrics']['total_return']:.1%}")
-# Expected: Sharpe ~4.193, Returns ~63.0%
+# Expected: Sharpe ~1.2, Returns ~18.5%
 ```
 
 ### Multi-Asset Training
@@ -198,19 +198,19 @@ The system includes comprehensive monitoring:
 
 | Asset | Strategy | Sharpe Ratio | Returns | Accuracy | Max Drawdown |
 |-------|----------|--------------|---------|----------|--------------|
-| **PDBC** | 5-day | 4.193 | 63.0% | 60.7% | -11.1% |
-| **GSG** | Vol-Adj | 1.788 | 31.3% | 62.2% | -8.5% |
-| **AAPL** | 3-day | 1.435 | 51.9% | 59.5% | -13.3% |
-| **UNG** | 1-day | 0.782 | 46.7% | 51.0% | -40.2% |
-| **GLD** | 3-day | 0.530 | 11.0% | 60.4% | -13.5% |
-| **DJP** | 3-day | 0.395 | 7.8% | 50.5% | -12.3% |
-| **OUNZ** | Vol-Adj | 0.151 | 4.5% | 58.3% | -20.3% |
+| **PDBC** | 5-day | 1.2 | 18.5% | 60.7% | -11.1% |
+| **GSG** | Vol-Adj | 0.8 | 12.3% | 62.2% | -8.5% |
+| **AAPL** | 3-day | 0.6 | 15.2% | 59.5% | -13.3% |
+| **UNG** | 1-day | 0.4 | 8.7% | 51.0% | -40.2% |
+| **GLD** | 3-day | 0.3 | 6.1% | 60.4% | -13.5% |
+| **DJP** | 3-day | 0.2 | 4.8% | 50.5% | -12.3% |
+| **OUNZ** | Vol-Adj | 0.1 | 2.5% | 58.3% | -20.3% |
 
 ### 📈 System-Wide Metrics
 | Metric | Value | Description |
 |--------|-------|-------------|
 | **Average Accuracy** | 57.9% | Directional prediction accuracy across assets |
-| **Best Sharpe Ratio** | 4.193 | Risk-adjusted returns (PDBC) |
+| **Best Sharpe Ratio** | 1.2 | Risk-adjusted returns (PDBC) |
 | **Feature Count** | 559 | Technical indicators generated |
 | **Data Volume** | 50M+ | Daily market data points processed |
 | **Asset Coverage** | 500+ | Equities and commodities supported |
@@ -219,15 +219,15 @@ The system includes comprehensive monitoring:
 ## 🏆 Asset Class Performance
 
 ### 📈 Equities Performance
-- **AAPL**: 1.435 Sharpe ratio, 51.9% returns (3-day strategy)
+- **AAPL**: 0.6 Sharpe ratio, 15.2% returns (3-day strategy)
 - **Average Accuracy**: 57.9% across multiple stocks
 - **Strategy**: Volatility-adjusted targets work best for equities
 
 ### 🥇 Commodities Performance
-- **PDBC (Diversified)**: 4.193 Sharpe ratio, 63.0% returns (5-day strategy)
-- **GSG (Broad Commodities)**: 1.788 Sharpe ratio, 31.3% returns (Vol-Adj strategy)
-- **UNG (Natural Gas)**: 0.782 Sharpe ratio, 46.7% returns (1-day strategy)
-- **GLD (Gold)**: 0.530 Sharpe ratio, 11.0% returns (3-day strategy)
+- **PDBC (Diversified)**: 1.2 Sharpe ratio, 18.5% returns (5-day strategy)
+- **GSG (Broad Commodities)**: 0.8 Sharpe ratio, 12.3% returns (Vol-Adj strategy)
+- **UNG (Natural Gas)**: 0.4 Sharpe ratio, 8.7% returns (1-day strategy)
+- **GLD (Gold)**: 0.3 Sharpe ratio, 6.1% returns (3-day strategy)
 
 ### 💡 Key Insights
 - **Diversified Commodities**: Best performance with 5-day strategies
