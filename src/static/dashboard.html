@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Trading System Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .neutral {
+            color: #f39c12;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .predictions-table {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .signal-buy {
+            background-color: #d5f4e6;
+            color: #27ae60;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .signal-sell {
+            background-color: #fadbd8;
+            color: #e74c3c;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .signal-hold {
+            background-color: #fef9e7;
+            color: #f39c12;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background-color: #fadbd8;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background-color: #27ae60;
+        }
+
+        .status-offline {
+            background-color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 ML Trading System Dashboard</h1>
+            <p>Real-time monitoring of 500+ equities with ensemble ML models</p>
+            <div id="status">
+                <span class="status-indicator status-offline"></span>
+                <span>Connecting...</span>
+            </div>
+        </div>
+
+        <div class="metrics-grid" id="metricsGrid">
+            <div class="metric-card">
+                <div class="metric-value" id="accuracy">--</div>
+                <div class="metric-label">Accuracy</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="sharpeRatio">--</div>
+                <div class="metric-label">Sharpe Ratio</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalReturn">--</div>
+                <div class="metric-label">Total Return</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="maxDrawdown">--</div>
+                <div class="metric-label">Max Drawdown</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="winRate">--</div>
+                <div class="metric-label">Win Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalTrades">--</div>
+                <div class="metric-label">Total Trades</div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Performance Over Time</div>
+                <div id="performanceChart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Prediction Distribution</div>
+                <div id="predictionChart"></div>
+            </div>
+        </div>
+
+        <div class="predictions-table">
+            <div class="table-title">Current Predictions</div>
+            <div id="predictionsTable">
+                <div class="loading">Loading predictions...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TradingDashboard {
+            constructor() {
+                this.apiBase = '/api';
+                this.updateInterval = 5000; // 5 seconds
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.loadDashboardData();
+                    this.startAutoUpdate();
+                    this.updateStatus('online');
+                } catch (error) {
+                    console.error('Failed to initialize dashboard:', error);
+                    this.updateStatus('offline');
+                }
+            }
+
+            async loadDashboardData() {
+                try {
+                    const response = await axios.get(`${this.apiBase}/dashboard`);
+                    const data = response.data;
+                    
+                    this.updateMetrics(data);
+                    this.updatePredictionsTable(data.predictions);
+                    this.loadPerformanceChart();
+                    this.loadPredictionChart(data.predictions);
+                    
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    this.showError('Failed to load dashboard data');
+                }
+            }
+
+            updateMetrics(data) {
+                const metrics = data.metrics || {};
+                const performance = data.performance || {};
+
+                // Update accuracy
+                const accuracy = metrics.accuracy?.overall || 0;
+                document.getElementById('accuracy').textContent = `${(accuracy * 100).toFixed(1)}%`;
+                document.getElementById('accuracy').className = `metric-value ${this.getMetricClass(accuracy, 0.5)}`;
+
+                // Update Sharpe ratio
+                const sharpeRatio = performance.sharpe_ratio || 0;
+                document.getElementById('sharpeRatio').textContent = sharpeRatio.toFixed(2);
+                document.getElementById('sharpeRatio').className = `metric-value ${this.getMetricClass(sharpeRatio, 1.0)}`;
+
+                // Update total return
+                const totalReturn = performance.total_return || 0;
+                document.getElementById('totalReturn').textContent = `${(totalReturn * 100).toFixed(1)}%`;
+                document.getElementById('totalReturn').className = `metric-value ${this.getMetricClass(totalReturn, 0)}`;
+
+                // Update max drawdown
+                const maxDrawdown = performance.max_drawdown || 0;
+                document.getElementById('maxDrawdown').textContent = `${(maxDrawdown * 100).toFixed(1)}%`;
+                document.getElementById('maxDrawdown').className = `metric-value ${this.getMetricClass(-maxDrawdown, 0.1)}`;
+
+                // Update win rate
+                const winRate = performance.win_rate || 0;
+                document.getElementById('winRate').textContent = `${(winRate * 100).toFixed(1)}%`;
+                document.getElementById('winRate').className = `metric-value ${this.getMetricClass(winRate, 0.5)}`;
+
+                // Update total trades
+                const totalTrades = performance.total_trades || 0;
+                document.getElementById('totalTrades').textContent = totalTrades.toLocaleString();
+                document.getElementById('totalTrades').className = 'metric-value neutral';
+            }
+
+            getMetricClass(value, threshold) {
+                if (value > threshold) return 'positive';
+                if (value < threshold) return 'negative';
+                return 'neutral';
+            }
+
+            updatePredictionsTable(predictions) {
+                const tableContainer = document.getElementById('predictionsTable');
+                
+                if (!predictions || Object.keys(predictions).length === 0) {
+                    tableContainer.innerHTML = '<div class="loading">No predictions available</div>';
+                    return;
+                }
+
+                const predictionsArray = Object.entries(predictions).map(([symbol, data]) => ({
+                    symbol,
+                    ...data
+                }));
+
+                const tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Prediction</th>
+                                <th>Confidence</th>
+                                <th>Signal</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${predictionsArray.map(pred => `
+                                <tr>
+                                    <td><strong>${pred.symbol}</strong></td>
+                                    <td>${(pred.prediction * 100).toFixed(1)}%</td>
+                                    <td>${(pred.confidence * 100).toFixed(1)}%</td>
+                                    <td><span class="signal-${pred.signal.toLowerCase()}">${pred.signal}</span></td>
+                                    <td>${new Date(pred.timestamp).toLocaleTimeString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                tableContainer.innerHTML = tableHTML;
+            }
+
+            async loadPerformanceChart() {
+                try {
+                    const response = await axios.get(`${this.apiBase}/performance?days=30`);
+                    const data = response.data;
+
+                    const trace1 = {
+                        x: data.dates,
+                        y: data.strategy_returns,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Strategy',
+                        line: { color: '#3498db', width: 3 }
+                    };
+
+                    const trace2 = {
+                        x: data.dates,
+                        y: data.benchmark_returns,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: 'Benchmark',
+                        line: { color: '#e74c3c', width: 2, dash: 'dash' }
+                    };
+
+                    const layout = {
+                        title: 'Cumulative Returns',
+                        xaxis: { title: 'Date' },
+                        yaxis: { title: 'Returns', tickformat: '.1%' },
+                        hovermode: 'x unified',
+                        showlegend: true,
+                        margin: { t: 40, r: 40, b: 40, l: 40 }
+                    };
+
+                    Plotly.newPlot('performanceChart', [trace1, trace2], layout, {responsive: true});
+                } catch (error) {
+                    console.error('Error loading performance chart:', error);
+                }
+            }
+
+            loadPredictionChart(predictions) {
+                if (!predictions || Object.keys(predictions).length === 0) {
+                    document.getElementById('predictionChart').innerHTML = '<div class="loading">No prediction data available</div>';
+                    return;
+                }
+
+                const predictionValues = Object.values(predictions).map(p => p.prediction);
+                const confidenceValues = Object.values(predictions).map(p => p.confidence);
+
+                const trace = {
+                    x: predictionValues,
+                    y: confidenceValues,
+                    mode: 'markers',
+                    type: 'scatter',
+                    marker: {
+                        size: 10,
+                        color: confidenceValues,
+                        colorscale: 'RdYlGn',
+                        showscale: true,
+                        colorbar: { title: 'Confidence' }
+                    },
+                    text: Object.keys(predictions),
+                    hovertemplate: '<b>%{text}</b><br>Prediction: %{x:.2%}<br>Confidence: %{y:.2%}<extra></extra>'
+                };
+
+                const layout = {
+                    title: 'Prediction vs Confidence',
+                    xaxis: { title: 'Prediction Probability', range: [0, 1] },
+                    yaxis: { title: 'Confidence', range: [0, 1] },
+                    margin: { t: 40, r: 40, b: 40, l: 40 }
+                };
+
+                Plotly.newPlot('predictionChart', [trace], layout, {responsive: true});
+            }
+
+            updateStatus(status) {
+                const statusElement = document.getElementById('status');
+                const indicator = statusElement.querySelector('.status-indicator');
+                
+                if (status === 'online') {
+                    indicator.className = 'status-indicator status-online';
+                    statusElement.innerHTML = '<span class="status-indicator status-online"></span><span>Online</span>';
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                    statusElement.innerHTML = '<span class="status-indicator status-offline"></span><span>Offline</span>';
+                }
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.metrics-grid'));
+            }
+
+            startAutoUpdate() {
+                setInterval(() => {
+                    this.loadDashboardData();
+                }, this.updateInterval);
+            }
+        }
+
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TradingDashboard();
+        });
+    </script>
+</body>
+</html>
