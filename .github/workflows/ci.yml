@@ -28,8 +28,8 @@ jobs:
     
     - name: Run tests
       run: |
-        python test_system.py
-      timeout-minutes: 10
+        python test_ci.py
+      timeout-minutes: 5
     
     - name: Run linting
       run: |
